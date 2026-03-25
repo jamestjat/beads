@@ -16,13 +16,27 @@ Beads integrates with GitHub Copilot through the `bd` CLI. Copilot Chat in agent
 
 ## Quick Setup
 
-### Step 1: Install Copilot integration
+All steps below run inside **your project directory** (not the beads repo):
+
+```bash
+cd your-project
+```
+
+### Step 1: Initialize beads
+
+```bash
+bd init --quiet
+```
+
+This creates a `.beads/` directory with the issue database. The init wizard will ask about git hooks—these are optional and you can skip them if unfamiliar.
+
+### Step 2: Install Copilot integration
 
 ```bash
 bd setup copilot
 ```
 
-This creates `.github/copilot-instructions.md` with beads workflow context that Copilot reads automatically.
+This creates `.github/copilot-instructions.md` in your project with beads workflow context that Copilot reads automatically.
 
 To also install reusable prompt files (optional):
 
@@ -38,21 +52,13 @@ This copies `.prompt.md` files to `.github/prompts/` for slash-command-style sho
 bd setup copilot --cli
 ```
 
-This installs Copilot CLI-specific features:
+This installs Copilot CLI-specific features in your project's `.github/` directory:
 - **Hooks** (`.github/hooks/beads.json`) — Auto-primes beads context on session start, auto-pushes on session end
 - **Skill** (`.github/skills/beads/SKILL.md`) — Beads workflow skill with auto-approved `bd` commands
 - **Agent** (`.github/agents/beads.agent.md`) — Dedicated beads issue tracking agent
+- **Instructions** (`.github/instructions/beads.instructions.md`) — Modular CLI instructions
 
 You can combine flags: `bd setup copilot --cli --prompts`
-
-### Step 2: Initialize beads in your project
-
-```bash
-cd your-project
-bd init --quiet
-```
-
-This creates a `.beads/` directory with the issue database. The init wizard will ask about git hooks—these are optional and you can skip them if unfamiliar.
 
 ### Step 3: Restart VS Code
 

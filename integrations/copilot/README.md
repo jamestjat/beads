@@ -13,9 +13,12 @@ No external MCP server or Python dependency is required. Copilot uses its built-
 
 ## Quick Setup
 
+Run all commands from **your project directory** (not the beads repo):
+
 ```bash
-# In your project directory:
-bd setup copilot
+cd your-project
+bd init --quiet        # Initialize beads database
+bd setup copilot       # Install Copilot integration
 ```
 
 This creates / updates one file:
