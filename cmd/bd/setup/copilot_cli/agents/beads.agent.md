@@ -35,3 +35,17 @@ At end of session:
 1. File issues for remaining work
 2. Close completed issues
 3. Run `bd dolt push` to sync
+
+## Proactive Issue Discovery
+
+While working on any task, **always** file new issues when you encounter:
+- Bugs, broken behavior, or error handling gaps
+- Missing tests, documentation gaps, or code quality issues
+- Performance problems or tech debt
+
+File immediately without interrupting the current task:
+```bash
+bd create "<title>" --description="Found while working on <current-task>: <details>" -t bug -p <priority> --deps discovered-from:<current-id> --json
+```
+
+This ensures nothing discovered during work is lost.

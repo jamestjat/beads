@@ -59,3 +59,18 @@ bd prime              # Full workflow context
 - Always include `--description` when creating issues
 - Link discovered work with `discovered-from` dependencies
 - Use `bd dolt push` to sync at end of session
+
+## Auto-Discovery
+
+While working on any task, if you encounter:
+- **Bugs**: Broken behavior, error handling gaps, incorrect logic
+- **Improvements**: Code smells, missing tests, documentation gaps, performance issues
+- **Tech debt**: Deprecated patterns, hardcoded values, missing validation
+
+**Immediately** create a beads issue linked to the current task:
+
+```bash
+bd create "<clear title>" --description="Found while working on <current-task>: <details>" -t bug -p <priority> --deps discovered-from:<current-id> --json
+```
+
+Do not stop your current task — file the issue and continue working. This ensures nothing is forgotten.

@@ -61,6 +61,7 @@ bd close bd-42 --reason "Completed" --json
 3. **Work on it**: Implement, test, document
 4. **Discover new work?** Create linked issue:
    - `bd create "Found bug" --description="Details about what was found" -p 1 --deps discovered-from:<parent-id>`
+   - **Proactive discovery**: While working on any task, if you find bugs, missing tests, code smells, or improvement opportunities, immediately file them as linked issues. Do not wait to be asked — file and continue working.
 5. **Complete**: `bd close <id> --reason "Done"`
 
 ### Quality
