@@ -121,10 +121,12 @@ Copilot: [runs bd dolt push] Pushed: 2 issues updated.
 
 | Feature | Claude Code | GitHub Copilot |
 |---------|-------------|----------------|
-| Setup command | `bd setup claude` | `bd setup copilot` |
+| Setup command | `bd setup claude` | `bd setup copilot` / `bd setup copilot --cli` |
 | Context file | `CLAUDE.md` | `.github/copilot-instructions.md` |
-| Session hooks | `bd prime` on SessionStart / PreCompact | Not available — use `bd prime` manually |
+| Session hooks | `bd prime` on SessionStart / PreCompact | `.github/hooks/beads.json` (with `--cli`) |
 | Slash commands | `claude-plugin/commands/` | `.github/prompts/*.prompt.md` |
+| Skills | `.claude/skills/` | `.github/skills/beads/SKILL.md` (with `--cli`) |
+| Custom agents | N/A | `.github/agents/beads.agent.md` (with `--cli`) |
 | CLI access | Direct shell + hooks | Built-in terminal in agent mode |
 | Dependencies | None (CLI only) | None (CLI only) |
 

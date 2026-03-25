@@ -24,6 +24,7 @@ var (
 	setupList    bool
 	setupAdd     string
 	setupPrompts bool
+	setupCLI     bool
 )
 
 var setupCmd = &cobra.Command{
@@ -366,10 +367,10 @@ func runCopilotRecipe() {
 		return
 	}
 	if setupRemove {
-		setup.RemoveCopilot(setupPrompts)
+		setup.RemoveCopilot(setupPrompts, setupCLI)
 		return
 	}
-	setup.InstallCopilot(setupPrompts)
+	setup.InstallCopilot(setupPrompts, setupCLI)
 }
 
 func init() {
@@ -386,6 +387,7 @@ func init() {
 	setupCmd.Flags().BoolVar(&setupGlobal, "global", false, "Install globally (mux only; writes ~/.mux/AGENTS.md)")
 	setupCmd.Flags().BoolVar(&setupStealth, "stealth", false, "Use stealth mode (claude/gemini)")
 	setupCmd.Flags().BoolVar(&setupPrompts, "prompts", false, "Install reusable prompt files (copilot)")
+	setupCmd.Flags().BoolVar(&setupCLI, "cli", false, "Install Copilot CLI hooks, skills, and agents (copilot)")
 
 	rootCmd.AddCommand(setupCmd)
 }

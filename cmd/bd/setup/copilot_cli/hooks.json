@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "prompt",
+        "prompt": "Run `bd prime` in the terminal to load beads issue tracking context, then briefly summarize any ready work."
+      }
+    ],
+    "sessionEnd": [
+      {
+        "type": "command",
+        "bash": "bd dolt push 2>/dev/null || true",
+        "powershell": "bd dolt push 2>$null; $true",
+        "timeoutSec": 15
+      }
+    ],
+    "agentStop": [
+      {
+        "type": "command",
+        "bash": "echo '{\"decision\": \"allow\"}'",
+        "powershell": "Write-Output '{\"decision\": \"allow\"}'",
+        "timeoutSec": 5
+      }
+    ]
+  }
+}

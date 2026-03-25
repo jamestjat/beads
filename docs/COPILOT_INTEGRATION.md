@@ -32,6 +32,19 @@ bd setup copilot --prompts
 
 This copies `.prompt.md` files to `.github/prompts/` for slash-command-style shortcuts in Copilot Chat.
 
+**For Copilot CLI users** (recommended):
+
+```bash
+bd setup copilot --cli
+```
+
+This installs Copilot CLI-specific features:
+- **Hooks** (`.github/hooks/beads.json`) — Auto-primes beads context on session start, auto-pushes on session end
+- **Skill** (`.github/skills/beads/SKILL.md`) — Beads workflow skill with auto-approved `bd` commands
+- **Agent** (`.github/agents/beads.agent.md`) — Dedicated beads issue tracking agent
+
+You can combine flags: `bd setup copilot --cli --prompts`
+
 ### Step 2: Initialize beads in your project
 
 ```bash
@@ -131,8 +144,10 @@ bd setup copilot --check
 ## Remove Integration
 
 ```bash
-bd setup copilot --remove             # Remove instructions only
-bd setup copilot --remove --prompts   # Also remove prompt files
+bd setup copilot --remove                    # Remove instructions only
+bd setup copilot --remove --prompts          # Also remove prompt files
+bd setup copilot --remove --cli              # Also remove hooks, skills, agents
+bd setup copilot --remove --prompts --cli    # Remove everything
 ```
 
 ## Troubleshooting

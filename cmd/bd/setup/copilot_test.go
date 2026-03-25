@@ -17,7 +17,7 @@ func TestInstallCopilot_InstructionsOnly(t *testing.T) {
 	}
 	defer func() { _ = os.Chdir(origDir) }()
 
-	InstallCopilot(false)
+	InstallCopilot(false, false)
 
 	// Instructions file must exist
 	if !FileExists(copilotInstructionsFile) {
@@ -33,6 +33,11 @@ func TestInstallCopilot_InstructionsOnly(t *testing.T) {
 	if FileExists(filepath.Join(copilotPromptsDir, "beads-ready.prompt.md")) {
 		t.Error("prompt files should NOT be created without --prompts flag")
 	}
+
+	// No CLI features without --cli
+	if FileExists(filepath.Join(copilotHooksDir, "beads.json")) {
+		t.Error("hooks should NOT be created without --cli flag")
+	}
 }
 
 func TestInstallCopilot_WithPrompts(t *testing.T) {
@@ -46,7 +51,7 @@ func TestInstallCopilot_WithPrompts(t *testing.T) {
 	}
 	defer func() { _ = os.Chdir(origDir) }()
 
-	InstallCopilot(true)
+	InstallCopilot(true, false)
 
 	// Instructions file must exist
 	if !FileExists(copilotInstructionsFile) {
@@ -74,7 +79,7 @@ func TestRemoveCopilot_WithPrompts(t *testing.T) {
 	defer func() { _ = os.Chdir(origDir) }()
 
 	// Install first
-	InstallCopilot(true)
+	InstallCopilot(true, false)
 
 	// Verify files exist
 	if !FileExists(copilotInstructionsFile) {
@@ -85,7 +90,7 @@ func TestRemoveCopilot_WithPrompts(t *testing.T) {
 	}
 
 	// Remove with prompts
-	RemoveCopilot(true)
+	RemoveCopilot(true, false)
 
 	// Instructions file may still exist (with non-beads boilerplate),
 	// but the beads section must be gone.
@@ -123,6 +128,75 @@ func TestCheckCopilot_NotInstalled(t *testing.T) {
 	// Just verify the file doesn't exist.
 	if FileExists(copilotInstructionsFile) {
 		t.Error("unexpected instructions file in temp dir")
+	}
+}
+
+func TestInstallCopilot_WithCLI(t *testing.T) {
+	origDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	tmpDir := t.TempDir()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("chdir: %v", err)
+	}
+	defer func() { _ = os.Chdir(origDir) }()
+
+	InstallCopilot(false, true)
+
+	// Instructions file must exist
+	if !FileExists(copilotInstructionsFile) {
+		t.Errorf("%s was not created", copilotInstructionsFile)
+	}
+
+	// CLI features must exist
+	if !FileExists(filepath.Join(copilotHooksDir, "beads.json")) {
+		t.Error("hooks file was not created")
+	}
+	if !FileExists(filepath.Join(copilotSkillsDir, "beads", "SKILL.md")) {
+		t.Error("skill file was not created")
+	}
+	if !FileExists(filepath.Join(copilotAgentsDir, "beads.agent.md")) {
+		t.Error("agent file was not created")
+	}
+
+	// No prompt files without --prompts
+	if FileExists(filepath.Join(copilotPromptsDir, "beads-ready.prompt.md")) {
+		t.Error("prompt files should NOT be created without --prompts flag")
+	}
+}
+
+func TestRemoveCopilot_WithCLI(t *testing.T) {
+	origDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("getwd: %v", err)
+	}
+	tmpDir := t.TempDir()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("chdir: %v", err)
+	}
+	defer func() { _ = os.Chdir(origDir) }()
+
+	// Install with CLI features
+	InstallCopilot(false, true)
+
+	// Verify CLI files exist
+	if !FileExists(filepath.Join(copilotHooksDir, "beads.json")) {
+		t.Fatalf("setup failed: hooks file missing")
+	}
+
+	// Remove with CLI flag
+	RemoveCopilot(false, true)
+
+	// CLI files should be gone
+	if FileExists(filepath.Join(copilotHooksDir, "beads.json")) {
+		t.Error("hooks file should have been removed")
+	}
+	if FileExists(filepath.Join(copilotSkillsDir, "beads", "SKILL.md")) {
+		t.Error("skill file should have been removed")
+	}
+	if FileExists(filepath.Join(copilotAgentsDir, "beads.agent.md")) {
+		t.Error("agent file should have been removed")
 	}
 }
 

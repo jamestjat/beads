@@ -13,10 +13,22 @@ import (
 const (
 	copilotInstructionsFile = ".github/copilot-instructions.md"
 	copilotPromptsDir       = ".github/prompts"
+	copilotHooksDir         = ".github/hooks"
+	copilotSkillsDir        = ".github/skills"
+	copilotAgentsDir        = ".github/agents"
 )
 
 //go:embed copilot_prompts/*.prompt.md
 var copilotPromptFiles embed.FS
+
+//go:embed copilot_cli/hooks.json
+var copilotHooksFile embed.FS
+
+//go:embed copilot_cli/skills/beads/SKILL.md
+var copilotSkillFile embed.FS
+
+//go:embed copilot_cli/agents/beads.agent.md
+var copilotAgentFile embed.FS
 
 // beadsPromptNames lists the prompt files shipped with the integration.
 var beadsPromptNames = []string{
@@ -36,7 +48,8 @@ var copilotIntegration = agentsIntegration{
 
 // InstallCopilot installs GitHub Copilot integration.
 // When installPrompts is true, reusable prompt files are also copied to .github/prompts/.
-func InstallCopilot(installPrompts bool) {
+// When installCLI is true, Copilot CLI hooks, skills, and agents are installed.
+func InstallCopilot(installPrompts bool, installCLI bool) {
 	fmt.Println("Installing GitHub Copilot integration...")
 
 	// 1. Ensure .github directory exists
@@ -59,14 +72,30 @@ func InstallCopilot(installPrompts bool) {
 		installCopilotPrompts()
 	}
 
+	// 4. Install Copilot CLI features (hooks, skills, agents)
+	if installCLI {
+		installCopilotCLIFeatures()
+	}
+
 	fmt.Println()
-	fmt.Println("Reload VS Code for changes to take effect.")
-	if !installPrompts {
+	if installCLI {
+		fmt.Println("Copilot CLI integration installed.")
+		fmt.Println("  Hooks auto-prime beads context on session start and push on session end.")
+		fmt.Println("  The beads skill and agent are available via /skills and /agent.")
+	} else {
+		fmt.Println("Reload VS Code for changes to take effect.")
+	}
+	if !installPrompts && !installCLI {
 		fmt.Println()
 		fmt.Println("Tip: use --prompts to also install reusable prompt files to .github/prompts/")
 	}
+	if !installCLI {
+		fmt.Println()
+		fmt.Println("For Copilot CLI, install hooks, skills, and agents:")
+		fmt.Println("  bd setup copilot --cli")
+	}
 	fmt.Println()
-	fmt.Println("For Copilot CLI, pre-approve bd commands:")
+	fmt.Println("Pre-approve bd commands in Copilot CLI:")
 	fmt.Println("  copilot --allow-tool='shell(bd:*)'")
 }
 
@@ -89,6 +118,52 @@ func installCopilotPrompts() {
 	}
 }
 
+// installCopilotCLIFeatures installs Copilot CLI hooks, skills, and agents.
+func installCopilotCLIFeatures() {
+	// Hooks
+	if err := EnsureDir(copilotHooksDir, 0o755); err != nil {
+		FatalError("%v", err)
+	}
+	hooksData, err := copilotHooksFile.ReadFile("copilot_cli/hooks.json")
+	if err != nil {
+		FatalError("read embedded hooks: %v", err)
+	}
+	hooksDest := filepath.Join(copilotHooksDir, "beads.json")
+	if err := atomicWriteFile(hooksDest, hooksData); err != nil {
+		FatalError("write hooks %s: %v", hooksDest, err)
+	}
+	fmt.Printf("✓ Hook:   %s\n", hooksDest)
+
+	// Skill
+	skillDir := filepath.Join(copilotSkillsDir, "beads")
+	if err := EnsureDir(skillDir, 0o755); err != nil {
+		FatalError("%v", err)
+	}
+	skillData, err := copilotSkillFile.ReadFile("copilot_cli/skills/beads/SKILL.md")
+	if err != nil {
+		FatalError("read embedded skill: %v", err)
+	}
+	skillDest := filepath.Join(skillDir, "SKILL.md")
+	if err := atomicWriteFile(skillDest, skillData); err != nil {
+		FatalError("write skill %s: %v", skillDest, err)
+	}
+	fmt.Printf("✓ Skill:  %s\n", skillDest)
+
+	// Agent
+	if err := EnsureDir(copilotAgentsDir, 0o755); err != nil {
+		FatalError("%v", err)
+	}
+	agentData, err := copilotAgentFile.ReadFile("copilot_cli/agents/beads.agent.md")
+	if err != nil {
+		FatalError("read embedded agent: %v", err)
+	}
+	agentDest := filepath.Join(copilotAgentsDir, "beads.agent.md")
+	if err := atomicWriteFile(agentDest, agentData); err != nil {
+		FatalError("write agent %s: %v", agentDest, err)
+	}
+	fmt.Printf("✓ Agent:  %s\n", agentDest)
+}
+
 // CheckCopilot reports whether the GitHub Copilot integration is installed.
 func CheckCopilot() {
 	instructionsExists := FileExists(copilotInstructionsFile)
@@ -107,6 +182,17 @@ func CheckCopilot() {
 		if promptCount > 0 {
 			fmt.Printf("  Prompts:      %s (%d files)\n", copilotPromptsDir, promptCount)
 		}
+
+		// Report CLI features
+		if FileExists(filepath.Join(copilotHooksDir, "beads.json")) {
+			fmt.Printf("  Hooks:        %s/beads.json\n", copilotHooksDir)
+		}
+		if FileExists(filepath.Join(copilotSkillsDir, "beads", "SKILL.md")) {
+			fmt.Printf("  Skill:        %s/beads/SKILL.md\n", copilotSkillsDir)
+		}
+		if FileExists(filepath.Join(copilotAgentsDir, "beads.agent.md")) {
+			fmt.Printf("  Agent:        %s/beads.agent.md\n", copilotAgentsDir)
+		}
 		return
 	}
 
@@ -115,7 +201,8 @@ func CheckCopilot() {
 
 // RemoveCopilot removes GitHub Copilot integration files.
 // When removePrompts is true, beads prompt files are also removed from .github/prompts/.
-func RemoveCopilot(removePrompts bool) {
+// When removeCLI is true, Copilot CLI hooks, skills, and agents are also removed.
+func RemoveCopilot(removePrompts bool, removeCLI bool) {
 	fmt.Println("Removing GitHub Copilot integration...")
 
 	removed := false
@@ -161,7 +248,31 @@ func RemoveCopilot(removePrompts bool) {
 		_ = os.Remove(copilotPromptsDir)
 	}
 
+	// Remove CLI features
+	if removeCLI {
+		removed = removeCopilotCLIFile(filepath.Join(copilotHooksDir, "beads.json")) || removed
+		removed = removeCopilotCLIFile(filepath.Join(copilotSkillsDir, "beads", "SKILL.md")) || removed
+		removed = removeCopilotCLIFile(filepath.Join(copilotAgentsDir, "beads.agent.md")) || removed
+		// Clean up empty directories
+		_ = os.Remove(filepath.Join(copilotSkillsDir, "beads"))
+		_ = os.Remove(copilotSkillsDir)
+		_ = os.Remove(copilotAgentsDir)
+		_ = os.Remove(copilotHooksDir)
+	}
+
 	if !removed {
 		fmt.Println("No GitHub Copilot integration found")
 	}
+}
+
+// removeCopilotCLIFile removes a single file and prints status. Returns true if removed.
+func removeCopilotCLIFile(path string) bool {
+	if FileExists(path) {
+		if err := os.Remove(path); err != nil {
+			FatalError("remove %s: %v", path, err)
+		}
+		fmt.Printf("✓ Removed %s\n", path)
+		return true
+	}
+	return false
 }
