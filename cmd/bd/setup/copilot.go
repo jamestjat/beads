@@ -16,6 +16,7 @@ const (
 	copilotHooksDir         = ".github/hooks"
 	copilotSkillsDir        = ".github/skills"
 	copilotAgentsDir        = ".github/agents"
+	copilotModularInsDir    = ".github/instructions"
 )
 
 //go:embed copilot_prompts/*.prompt.md
@@ -30,11 +31,15 @@ var copilotSkillFile embed.FS
 //go:embed copilot_cli/agents/beads.agent.md
 var copilotAgentFile embed.FS
 
+//go:embed copilot_cli/instructions/beads.instructions.md
+var copilotInstructionsModularFile embed.FS
+
 // beadsPromptNames lists the prompt files shipped with the integration.
 var beadsPromptNames = []string{
 	"beads-ready.prompt.md",
 	"beads-create.prompt.md",
 	"beads-workflow.prompt.md",
+	"beads-fleet.prompt.md",
 	"plan-to-beads.prompt.md",
 }
 
@@ -97,6 +102,7 @@ func InstallCopilot(installPrompts bool, installCLI bool) {
 	fmt.Println()
 	fmt.Println("Pre-approve bd commands in Copilot CLI:")
 	fmt.Println("  copilot --allow-tool='shell(bd:*)'")
+	fmt.Println("  Or use /allow-all in a session")
 }
 
 // installCopilotPrompts copies embedded prompt files to .github/prompts/.
@@ -162,6 +168,20 @@ func installCopilotCLIFeatures() {
 		FatalError("write agent %s: %v", agentDest, err)
 	}
 	fmt.Printf("✓ Agent:  %s\n", agentDest)
+
+	// Modular instructions (Copilot CLI v1.0.11+ auto-discovers .github/instructions/)
+	if err := EnsureDir(copilotModularInsDir, 0o755); err != nil {
+		FatalError("%v", err)
+	}
+	insData, err := copilotInstructionsModularFile.ReadFile("copilot_cli/instructions/beads.instructions.md")
+	if err != nil {
+		FatalError("read embedded instructions: %v", err)
+	}
+	insDest := filepath.Join(copilotModularInsDir, "beads.instructions.md")
+	if err := atomicWriteFile(insDest, insData); err != nil {
+		FatalError("write instructions %s: %v", insDest, err)
+	}
+	fmt.Printf("✓ Instructions: %s\n", insDest)
 }
 
 // CheckCopilot reports whether the GitHub Copilot integration is installed.
@@ -192,6 +212,9 @@ func CheckCopilot() {
 		}
 		if FileExists(filepath.Join(copilotAgentsDir, "beads.agent.md")) {
 			fmt.Printf("  Agent:        %s/beads.agent.md\n", copilotAgentsDir)
+		}
+		if FileExists(filepath.Join(copilotModularInsDir, "beads.instructions.md")) {
+			fmt.Printf("  Modular:      %s/beads.instructions.md\n", copilotModularInsDir)
 		}
 		return
 	}
@@ -253,11 +276,13 @@ func RemoveCopilot(removePrompts bool, removeCLI bool) {
 		removed = removeCopilotCLIFile(filepath.Join(copilotHooksDir, "beads.json")) || removed
 		removed = removeCopilotCLIFile(filepath.Join(copilotSkillsDir, "beads", "SKILL.md")) || removed
 		removed = removeCopilotCLIFile(filepath.Join(copilotAgentsDir, "beads.agent.md")) || removed
+		removed = removeCopilotCLIFile(filepath.Join(copilotModularInsDir, "beads.instructions.md")) || removed
 		// Clean up empty directories
 		_ = os.Remove(filepath.Join(copilotSkillsDir, "beads"))
 		_ = os.Remove(copilotSkillsDir)
 		_ = os.Remove(copilotAgentsDir)
 		_ = os.Remove(copilotHooksDir)
+		_ = os.Remove(copilotModularInsDir)
 	}
 
 	if !removed {

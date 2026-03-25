@@ -311,6 +311,50 @@ Or add directories mid-session:
 
 Each repo can have its own `.beads/` database. Use `bd` commands from the appropriate directory.
 
+### Copilot CLI v1.0.11+ Features
+
+Recent Copilot CLI releases (v1.0.8-v1.0.12) added features that enhance the beads workflow:
+
+#### Monorepo Support (v1.0.11)
+
+Copilot CLI now discovers custom instructions, skills, and agents at every directory level from working directory to git root. The beads integration files in `.github/` are automatically picked up. For modular instructions, `bd setup copilot --cli` also installs `.github/instructions/beads.instructions.md`.
+
+#### Parallel Work with /fleet
+
+Use `/fleet` to parallelize independent ready issues across subagents:
+
+```
+bd ready --json          # Find independent issues
+/fleet                   # Distribute across subagents
+```
+
+Each subagent claims, implements, and closes one issue. Only the orchestrator session runs `bd dolt push` — subagents must not push to avoid Dolt write conflicts.
+
+#### /undo
+
+Use `/undo` to revert the last turn, including both code changes and any `bd` state changes (claims, closes, etc.).
+
+#### Session Management
+
+- `/new` — Start fresh conversation (triggers sessionEnd hook, auto-pushes changes)
+- `/clear` — Abandon session without hooks (use to discard unwanted work)
+- `/session plan` — Review current implementation plan
+- `/compact` — Manually compress context; `bd prime` re-injects beads context after compaction
+
+#### /allow-all
+
+Use `/allow-all` (or `/allow-all on`) to pre-approve all tool calls in the current session, including `bd` commands. Alternative to `copilot --allow-tool='shell(bd:*)'`.
+
+#### /delegate with Beads
+
+Use `/delegate` to offload tangential work discovered during your main task. The coding agent creates a PR while you continue working locally:
+
+```
+/delegate Fix the typo in README.md and update the API docs
+```
+
+Good candidates: documentation, refactoring separate modules, implementing discovered bugs. Keep core issue work (claim, close, dependency changes) in your local session.
+
 ### Recommended Workflow
 
 The Copilot CLI best practice workflow maps naturally to beads:

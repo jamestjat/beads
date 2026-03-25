@@ -73,5 +73,9 @@ For full documentation run `bd --help` or see the project's COPILOT_INTEGRATION.
 ## Copilot CLI Tips
 
 - Use `/plan` for complex multi-file changes, then convert to beads issues
+- Use `/fleet` to parallelize independent ready issues across subagents
 - Use `/delegate` for tangential tasks (docs, refactoring)
-- Pre-approve bd commands: `copilot --allow-tool='shell(bd:*)'`
+- Use `/undo` to revert the last turn if an approach fails
+- Use `/compact` when context grows large in long sessions
+- Use `/session plan` to review the current implementation plan
+- Pre-approve bd commands: `/allow-all` or `copilot --allow-tool='shell(bd:*)'`

@@ -159,6 +159,9 @@ func TestInstallCopilot_WithCLI(t *testing.T) {
 	if !FileExists(filepath.Join(copilotAgentsDir, "beads.agent.md")) {
 		t.Error("agent file was not created")
 	}
+	if !FileExists(filepath.Join(copilotModularInsDir, "beads.instructions.md")) {
+		t.Error("modular instructions file was not created")
+	}
 
 	// No prompt files without --prompts
 	if FileExists(filepath.Join(copilotPromptsDir, "beads-ready.prompt.md")) {
@@ -198,5 +201,7 @@ func TestRemoveCopilot_WithCLI(t *testing.T) {
 	if FileExists(filepath.Join(copilotAgentsDir, "beads.agent.md")) {
 		t.Error("agent file should have been removed")
 	}
+	if FileExists(filepath.Join(copilotModularInsDir, "beads.instructions.md")) {
+		t.Error("modular instructions file should have been removed")
+	}
 }
-

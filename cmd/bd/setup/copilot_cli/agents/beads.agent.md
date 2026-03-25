@@ -29,12 +29,24 @@ Always include:
 - Appropriate `-t` type and `-p` priority
 - `--deps discovered-from:<id>` when found during other work
 
+## Copilot CLI Commands
+
+Use these Copilot CLI commands to enhance your workflow:
+
+- **`/fleet`** — Parallelize independent ready issues across subagents. Run `bd ready --json` first, identify issues with no mutual dependencies via `bd dep tree`, then distribute one issue per subagent. Important: only the main session should run `bd dolt push`, not subagents.
+- **`/delegate`** — Offload tangential discovered work (docs, refactoring) to the coding agent while you continue on core work.
+- **`/undo`** — Revert the last turn if an approach fails. Reverts both code and bd state changes.
+- **`/compact`** — Compress context when sessions grow large. `bd prime` will re-inject beads context after compaction.
+- **`/new`** — Start fresh conversation. Triggers sessionEnd hook (auto-pushes changes). Use between unrelated tasks.
+- **`/clear`** — Abandon session without triggering hooks. Use only to discard unwanted work.
+- **`/session plan`** — Review the current implementation plan.
+
 ## Session Protocol
 
 At end of session:
 1. File issues for remaining work
 2. Close completed issues
-3. Run `bd dolt push` to sync
+3. Push runs automatically via sessionEnd hook (or manually: `bd dolt push`)
 
 ## Proactive Issue Discovery
 
