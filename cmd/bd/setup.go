@@ -23,6 +23,7 @@ var (
 	setupOutput  string
 	setupList    bool
 	setupAdd     string
+	setupPrompts bool
 )
 
 var setupCmd = &cobra.Command{
@@ -32,7 +33,7 @@ var setupCmd = &cobra.Command{
 	Long: `Setup integration files for AI editors and coding assistants.
 
 Recipes define where beads workflow instructions are written. Built-in recipes
-include cursor, claude, gemini, aider, factory, codex, mux, opencode, junie, windsurf, cody, and kilocode.
+include cursor, claude, gemini, aider, factory, codex, mux, opencode, junie, copilot, windsurf, cody, and kilocode.
 
 Examples:
   bd setup cursor          # Install Cursor IDE integration
@@ -186,6 +187,9 @@ func runRecipe(name string) {
 		return
 	case "junie":
 		runJunieRecipe()
+		return
+	case "copilot":
+		runCopilotRecipe()
 		return
 	}
 
@@ -356,6 +360,18 @@ func runJunieRecipe() {
 	setup.InstallJunie()
 }
 
+func runCopilotRecipe() {
+	if setupCheck {
+		setup.CheckCopilot()
+		return
+	}
+	if setupRemove {
+		setup.RemoveCopilot(setupPrompts)
+		return
+	}
+	setup.InstallCopilot(setupPrompts)
+}
+
 func init() {
 	// Global flags for the setup command
 	setupCmd.Flags().BoolVar(&setupList, "list", false, "List all available recipes")
@@ -369,6 +385,7 @@ func init() {
 	setupCmd.Flags().BoolVar(&setupProject, "project", false, "Install for this project only (claude/gemini/mux)")
 	setupCmd.Flags().BoolVar(&setupGlobal, "global", false, "Install globally (mux only; writes ~/.mux/AGENTS.md)")
 	setupCmd.Flags().BoolVar(&setupStealth, "stealth", false, "Use stealth mode (claude/gemini)")
+	setupCmd.Flags().BoolVar(&setupPrompts, "prompts", false, "Install reusable prompt files (copilot)")
 
 	rootCmd.AddCommand(setupCmd)
 }
